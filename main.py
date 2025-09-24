@@ -85,7 +85,7 @@ async def call_roboflow(image_bytes: bytes) -> Dict[str, Any]:
 # Función para llamar a Gemini OCR
 async def call_gemini_ocr(image_bytes: bytes) -> Dict[str, Any]:
     """Llama a Gemini para OCR de un producto recortado"""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     
     # Convertir imagen a base64
     image_b64 = base64.b64encode(image_bytes).decode('utf-8')
