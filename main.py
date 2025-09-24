@@ -62,16 +62,24 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
 # Función para llamar a Roboflow
 async def call_roboflow(image_bytes: bytes) -> Dict[str, Any]:
     """Llama a Roboflow para detectar productos"""
-    url = f"https://serverless.roboflow.com/{ROBOFLOW_PROJECT}/{ROBOFLOW_VERSION}"
-    
+    if not ROBOFLOW_API_KEY:
+        raise HTTPException(status_code=500, detail="Roboflow configuration error: missing ROBOFLOW_API_KEY env var")
+
+    # Roboflow Serverless expects the API key as a query parameter
+    url = f"https://serverless.roboflow.com/{ROBOFLOW_PROJECT}/{ROBOFLOW_VERSION}?api_key={ROBOFLOW_API_KEY}"
+
     files = {"file": ("image.jpg", image_bytes, "image/jpeg")}
-    headers = {"Authorization": f"Bearer {ROBOFLOW_API_KEY}"}
-    
+    headers = {}
+
     try:
         response = await http_client.post(url, files=files, headers=headers)
         response.raise_for_status()
         return response.json()
     except httpx.HTTPError as e:
+        # Superficial parse for 401 to provide clearer guidance
+        status = getattr(e.response, "status_code", None) if hasattr(e, "response") and e.response is not None else None
+        if status == 401:
+            raise HTTPException(status_code=500, detail="Roboflow error: 401 Unauthorized. Verify ROBOFLOW_API_KEY and project/version access.")
         raise HTTPException(status_code=500, detail=f"Roboflow error: {str(e)}")
 
 # Función para llamar a Gemini OCR
