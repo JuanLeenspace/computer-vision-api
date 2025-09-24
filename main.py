@@ -163,6 +163,12 @@ def crop_image(image_bytes: bytes, bbox: Dict[str, float], padding: int = 10) ->
         x_max = min(width, int(bbox["x"] + bbox["width"]/2 + padding))
         y_max = min(height, int(bbox["y"] + bbox["height"]/2 + padding))
         
+        # Asegurar que las coordenadas sean válidas (lower < upper)
+        if x_min >= x_max:
+            x_min, x_max = max(0, x_max - 1), min(width, x_min + 1)
+        if y_min >= y_max:
+            y_min, y_max = max(0, y_max - 1), min(height, y_min + 1)
+        
         # Recortar imagen
         cropped = image.crop((x_min, y_min, x_max, y_max))
         
